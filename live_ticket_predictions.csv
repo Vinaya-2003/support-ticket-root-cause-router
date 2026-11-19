@@ -1,5 +1,0 @@
-New_Ticket,Predicted_Route,Confidence_%,Action
-I tried paying at the grocery store but my card got rejected twice.,CARD / LINK / NEW,56.4,Auto-Route
-Why is my bank transfer still pending after three days?,PENDING / CASH / WITHDRAWAL,65.1,Auto-Route
-Someone used my card in another city without my permission!,CARD / LINK / NEW,67.0,Auto-Route
-My cat walked across my keyboard and ordered a toaster.,CARD / LINK / NEW,39.8,Human Review
