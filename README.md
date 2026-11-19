@@ -1,6 +1,8 @@
 # Automated Customer Support Root-Cause Discovery & Ticket Routing
 
-An end-to-end Natural Language Processing (NLP) and Machine Learning pipeline that transforms raw, unlabeled customer support messages into structured operational categories and routes incoming tickets automatically with built-in confidence guardrails.
+An end-to-end Natural Language Processing (NLP) and Machine Learning pipeline—paired with an interactive browser simulator—that transforms raw, unlabeled customer support messages into structured operational categories and routes incoming tickets automatically with built-in confidence guardrails.
+
+> **Live Interactive Web Demo:** [https://vinaya-2003.github.io/support-ticket-root-cause-router/](https://vinaya-2003.github.io/support-ticket-root-cause-router/)
 
 ---
 
@@ -8,7 +10,7 @@ An end-to-end Natural Language Processing (NLP) and Machine Learning pipeline th
 
 Customer support teams receive thousands of unstructured messages daily. Manual reading and tagging slow down response times, hide emerging product glitches until refund requests pile up, and waste hours of staff labor.
 
-This pipeline solves both halves of the problem in a single automated workflow:
+This project solves both halves of the problem in a single automated workflow:
 1. **Unsupervised Root-Cause Discovery:** Automatically reads historical tickets by semantic meaning—not rigid keywords—and groups recurring complaints into clear operational buckets without requiring pre-labeled training data.
 2. **Supervised Ticket Routing & Guardrails:** Trains a lightweight classifier on those discovered buckets to route new incoming messages in milliseconds, while automatically flagging low-confidence edge cases (`< 45%` confidence) for human review.
 
@@ -23,21 +25,30 @@ flowchart LR
     C --> D[Step 4: Root-Cause Discovery<br/>Agglomerative Clustering]
     D --> E[Step 5: Train & Evaluate<br/>Logistic Regression 80/20 Split]
     E --> F[Step 6: Live Routing<br/>45% Confidence Guardrail]
-    F --> G[Step 7–8: Dashboard & CSVs]
+    F --> G[Step 7–8: Dashboard, CSVs & Web Demo]
 ```
+
+---
+
+## Interactive Web App Demo (`index.html`)
+
+Explore the live model behavior directly in your browser at **[vinaya-2003.github.io/support-ticket-root-cause-router](https://vinaya-2003.github.io/support-ticket-root-cause-router/)**:
+* **Historical Cluster Breakdown:** Visualizes the top discovered root-cause themes and ticket volumes from the 300-ticket dataset.
+* **Dynamic Confidence Guardrail Slider:** Adjust the minimum auto-route threshold (`25%` to `85%`) in real time to see how stricter or looser thresholds shift tickets between **Auto-Route** and **Human Review**.
+* **Live Ticket Triage Simulator:** Type custom customer messages or test one-click presets (e.g., card declines, pending transfers, FX rate questions, and out-of-domain edge cases) to observe instant classification and confidence scoring.
 
 ---
 
 ## Technical Stack, Models & Algorithms
 
-| Pipeline Component | Model / Algorithm Used | Purpose & Why It Was Chosen |
+| Pipeline Component | Model / Tool Used | Purpose & Why It Was Chosen |
 | :--- | :--- | :--- |
 | **Data Processing & EDA** | `Pandas` | Cleans whitespace/duplicates and computes ticket length distributions (`mean = 11.0 words`, `range = 4–47 words`). |
 | **Feature Engineering** | `all-MiniLM-L6-v2` (`Sentence-Transformers`) | Converts unstructured sentences into **384-dimensional normalized dense vectors** that capture semantic meaning rather than exact word matches. |
 | **Unsupervised Clustering** | `AgglomerativeClustering` (`metric="cosine"`, `linkage="average"`, `distance_threshold=0.55`) | Discovers problem clusters automatically from the bottom up without requiring a pre-guessed cluster count ($K$). |
 | **Cluster Auto-Labeling** | `TfidfVectorizer` | Extracts the top 3 highest-scoring descriptive keywords per cluster to generate human-readable category names. |
 | **Supervised Classifier** | `LogisticRegression` (`max_iter=1000`) | Learns decision boundaries over the 384-d embeddings to predict categories for brand-new unseen customer messages. |
-| **Visualization & Reporting** | `Matplotlib` | Generates a 2-panel executive dashboard comparing historical issue volume against live routing confidence thresholds. |
+| **Visualization & Web UI** | `Matplotlib` & Vanilla `HTML/CSS/JS` | Generates a 2-panel executive dashboard alongside a standalone browser simulator (`index.html`). |
 
 ---
 
@@ -71,29 +82,22 @@ New unseen messages are scored and routed against a **`45.0%` minimum confidence
 
 ---
 
-## Executive Dashboard Output
+## Repository Structure & Quickstart
 
-![Executive Dashboard](dashboard.png)
-
-* **Panel A (Discovered Root Causes):** Ranks the highest-volume historical customer issues discovered automatically from raw text.
-* **Panel B (Live Prediction Confidence & Guardrail):** Visualizes model confidence for incoming tickets against the dashed red **45% Auto-Route Threshold**, cleanly isolating out-of-domain anomalies in amber for human review.
-
----
-
-## Repository Deliverables & How to Run
-
-### Generated Files
+### Files in This Repository
+* `ticket_root_cause_pipeline.ipynb` — Complete 8-step Google Colab / Jupyter notebook for data ingestion, EDA, clustering, training, validation, and visualization.
+* `index.html` — Interactive web simulator deployed at [https://vinaya-2003.github.io/support-ticket-root-cause-router/](https://vinaya-2003.github.io/support-ticket-root-cause-router/).
 * `raw_customer_tickets.csv` — Raw ingested dataset (`300` rows) saved prior to preprocessing.
 * `clustered_historical_tickets.csv` — Full dataset enriched with `Cluster_ID`, `Problem_Theme`, and `Word_Count`.
 * `live_ticket_predictions.csv` — Inference report containing `Predicted_Route`, `Confidence_%`, and `Action` flags.
 
-### Quickstart
-1. Install dependencies:
-   ```bash
-   pip install pandas matplotlib datasets sentence-transformers scikit-learn
-   ```
-2. Run the end-to-end pipeline script:
-   ```bash
-   python ticket_root_cause_pipeline.py
-   ```
-3. To test on your own business dataset, replace `raw_filename = "raw_customer_tickets.csv"` in **Step 1** with your CSV path and point `df["Message"]` to your text column.
+### How to Run Locally
+* **Run the Interactive Web Demo:**
+  ```bash
+  start index.html
+  ```
+* **Run the Python ML Pipeline:**
+  ```bash
+  pip install pandas matplotlib datasets sentence-transformers scikit-learn
+  jupyter notebook ticket_root_cause_pipeline.ipynb
+  ```
